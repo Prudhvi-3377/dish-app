@@ -1,0 +1,20 @@
+<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" > 
+
+    <label for="username">Username:</label>
+    <br/>
+    <input type="text" formControlName="userName" >
+    <div *ngIf="loginForm.get('userName')?.invalid && (loginForm.get('userName')?.touched || loginForm.get('userName')?.dirty)">
+        <small class="error" style="color:red">Username must be at least 5 characters long.</small>
+    </div>
+        <br/><br/>
+    <label for="password">Password:</label>
+    <br/>
+    <input type="text" formControlName="password">
+    <div *ngIf="loginForm.get('password')?.invalid && (loginForm.get('password')?.touched || loginForm.get('password')?.dirty)">
+        <small class="error" style="color:red">Password must be at least 5 characters long.</small>
+        
+    </div>
+    <br/><br/>
+    <button class="btn btn-primary" type="submit" [disabled]="loginForm.invalid">Login</button>
+
+</form>
