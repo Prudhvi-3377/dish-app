@@ -10,59 +10,52 @@ on:
       - master
 
 jobs:
-  build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+  build_and_deploy:
     runs-on: ubuntu-latest
-    name: Build and Deploy Angular App
+    name: Auto Build Angular and Deploy to Azure SWA
     steps:
       # 1️⃣ Checkout code
       - uses: actions/checkout@v3
 
       # 2️⃣ Setup Node.js 22
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: '22'
 
-      # 3️⃣ Detect Angular project folder automatically
-      - name: Detect Angular Project Folder
+      # 3️⃣ Detect Angular project folder
+      - name: Detect Angular Project
         id: detect-angular
         run: |
-          # Find the folder containing angular.json
-          APP_DIR=$(find . -name "angular.json" -exec dirname {} \;)
-          echo "Angular project folder detected: $APP_DIR"
+          APP_DIR=$(find . -name "angular.json" -exec dirname {} \; | head -n 1)
+          echo "Angular project folder: $APP_DIR"
           echo "APP_DIR=$APP_DIR" >> $GITHUB_ENV
 
-      # 4️⃣ Install dependencies
+      # 4️⃣ Detect Angular dist folder
+      - name: Detect Angular Output Folder
+        id: detect-dist
+        run: |
+          OUTPUT_PATH=$(node -p "require('${{ env.APP_DIR }}/angular.json').projects[require('${{ env.APP_DIR }}/angular.json').defaultProject].architect.build.options.outputPath")
+          echo "Angular dist folder: $OUTPUT_PATH"
+          echo "DIST_FOLDER=$OUTPUT_PATH" >> $GITHUB_ENV
+
+      # 5️⃣ Install dependencies
       - name: Install Dependencies
         run: npm ci
         working-directory: ${{ env.APP_DIR }}
 
-      # 5️⃣ Build Angular app
+      # 6️⃣ Build Angular app
       - name: Build Angular App
-        run: npm run build -- --output-path=dist
+        run: npm run build
         working-directory: ${{ env.APP_DIR }}
 
-      # 6️⃣ Deploy static files to Azure SWA
+      # 7️⃣ Deploy static files to Azure SWA
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_POND_0077CF300 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "${{ env.APP_DIR }}/dist"   # Already built Angular app
-          api_location: ""                          # If you have no API
-          output_location: "."                      # Upload content directly
-          skip_app_build: true                      # Skip Oryx build
-          node_version: "22"                        # Optional, just for info
-
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    steps:
-      - name: Close Pull Request
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_ORANGE_POND_0077CF300 }}
-          action: "close"
+          app_location: "${{ env.APP_DIR }}/${{ env.DIST_FOLDER }}"  # Already built Angular app
+          api_location: ""                                          # No API
+          output_location: "."                                      # Upload content directly
+          skip_app_build: true                                      # Skip Oryx build
