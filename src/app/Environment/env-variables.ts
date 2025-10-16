@@ -12,11 +12,11 @@ export interface envVars{
 
 export const environmentUrls: envVars = {
   Url: {
-    login: 'https://localhost:1221/api/Dishes/login',
-    getAllDishes: 'https://localhost:1221/api/Dishes',
-    getDishById: 'https://localhost:1221/api/Dishes/GetDishes/id?id=', 
-    addDish: 'https://localhost:1221/api/Dishes',
-    updateDish: 'https://localhost:1221/api/Dishes',
-    deleteDish: 'https://localhost:1221/api/Dishes?id=',
+    login: 'https://dish-app-list.azurewebsites.net/api/Dishes/login',
+    getAllDishes: 'https://dish-app-list.azurewebsites.net/api/Dishes',
+    getDishById: 'https://dish-app-list.azurewebsites.net/api/Dishes/', 
+    addDish: 'https://dish-app-list.azurewebsites.net/api/Dishes',
+    updateDish: 'https://dish-app-list.azurewebsites.net/api/Dishes',
+    deleteDish: 'https://dish-app-list.azurewebsites.net/api/Dishes?id=',
   }
 };
